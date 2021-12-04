@@ -5,7 +5,7 @@ var mongo = require('mongodb')
 var MongoClient = mongo.MongoClient
 dotenv.config();
 var MongoUrl= 'mongodb+srv://shekhar:shekhar123@cluster0.pfjzw.mongodb.net/dummyd?retryWrites=true&w=majority'
-var port = process.env.PORT || 2000
+var port = process.env.PORT || 2001
 var db;
 
 
