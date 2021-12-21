@@ -10,7 +10,7 @@ var db;
 
 
 app.get('/',(err,res)=>{
-    res.send('Api working fine')
+    res.send('Api working ..fine')
 })
 
 
