@@ -1,5 +1,6 @@
 var express = require('express')
 var app = express();
+var cors = require('cors')
 var dotenv = require('dotenv')
 var mongo = require('mongodb')
 var MongoClient = mongo.MongoClient
@@ -38,7 +39,7 @@ MongoClient.connect(MongoUrl,(err,client)=>{
     db=client.db('RentHunt')
 })
 
-
+app.use(cors())
 
 app.listen(port,()=>{
     console.log(`localhost:${port}`)
