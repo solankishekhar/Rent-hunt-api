@@ -9,6 +9,7 @@ var MongoUrl= 'mongodb+srv://shekhar:shekhar123@cluster0.pfjzw.mongodb.net/dummy
 var port = process.env.PORT || 2001
 var db;
 
+app.use(cors())
 
 app.get('/',(err,res)=>{
     res.send('Api working ..fine')
@@ -39,7 +40,7 @@ MongoClient.connect(MongoUrl,(err,client)=>{
     db=client.db('RentHunt')
 })
 
-app.use(cors())
+
 
 app.listen(port,()=>{
     console.log(`localhost:${port}`)
