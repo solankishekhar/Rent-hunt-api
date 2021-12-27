@@ -43,7 +43,13 @@ app.get('/property',(req,res)=>{
     })
 })
 
-
+app.post('/addproperty',(req,res)=>{
+    console.log(req.body)
+    db.collection('Property').insert(req.body,(err,result)=>{
+        if(err) throw err;
+        res.send('data inserted succesfully')
+    })
+})
 
 
 MongoClient.connect(MongoUrl,(err,client)=>{
