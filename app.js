@@ -1,6 +1,7 @@
 var express = require('express')
 var app = express();
 var cors = require('cors')
+var bodyParser = require('body-parser')
 var dotenv = require('dotenv')
 var mongo = require('mongodb')
 var MongoClient = mongo.MongoClient
@@ -10,6 +11,7 @@ var port = process.env.PORT || 2001
 var db;
 
 app.use(cors())
+app.use(bodyParser.json());
 
 app.use(function (req, res, next) {
     res.setHeader('Access-Control-Allow-Origin', '*');
