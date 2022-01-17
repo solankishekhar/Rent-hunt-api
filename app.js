@@ -28,7 +28,6 @@ app.get('/',(err,res)=>{
     res.send('Api working ..fine')
 })
 
-
 app.get('/tenant',(req,res)=>{
 
     db.collection('Tenant').find().toArray((err,result)=>{
@@ -36,6 +35,14 @@ app.get('/tenant',(req,res)=>{
         res.send(result)
     })
    
+})
+
+app.post('/addtenant',(req,res)=>{
+    console.log(req.body)
+    db.collection('Tenant').insert(req.body,(err,result)=>{
+        if(err) throw err;
+        res.send('data inserted succesfully')
+    })
 })
 
 app.get('/property',(req,res)=>{
@@ -58,6 +65,7 @@ MongoClient.connect(MongoUrl,(err,client)=>{
     if (err) console.log('Not connecting');
     db=client.db('RentHunt')
 })
+
 
 
 
