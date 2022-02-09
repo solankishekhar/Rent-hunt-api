@@ -1,13 +1,16 @@
-var express = require('express')
-var app = express();
-var cors = require('cors')
-var bodyParser = require('body-parser')
-var dotenv = require('dotenv')
-var mongo = require('mongodb')
-var MongoClient = mongo.MongoClient
+const express = require('express')
+const app = express();
+const cors = require('cors')
+const bodyParser = require('body-parser')
+const dotenv = require('dotenv')
+const mongo = require('mongodb')
+const mongoose = require('mongoose')
+const MongoClient = mongo.MongoClient
 dotenv.config();
-var MongoUrl= 'mongodb+srv://shekhar:shekhar123@cluster0.pfjzw.mongodb.net/dummyd?retryWrites=true&w=majority'
-var port = process.env.PORT || 2001
+const MongoUrl= 'mongodb+srv://shekhar:shekhar123@cluster0.pfjzw.mongodb.net/dummyd?retryWrites=true&w=majority'
+const port = process.env.PORT || 2001
+const nodemailer = require('nodemailer');
+const multer  = require('multer')
 var db;
 
 app.use(cors())
@@ -22,23 +25,21 @@ app.use(function (req, res, next) {
 });
 
 
-
-
 app.get('/',(err,res)=>{
     res.send('Api working ..fine')
 })
 
 app.get('/tenant',(req,res)=>{
-
-    db.collection('Tenant').find().toArray((err,result)=>{
-        if (err) throw ('This is API is not working')
+    var query = parseInt(req.query.user_id);
+    // console.log(req);
+    db.collection('Tenant').find({user_id:query}).toArray((err,result)=>{
+        if (err) throw ('This API is not working')
         res.send(result)
     })
-   
 })
 
 app.post('/addtenant',(req,res)=>{
-    console.log(req.body)
+    // console.log(req.body)
     db.collection('Tenant').insert(req.body,(err,result)=>{
         if(err) throw err;
         res.send('data inserted succesfully')
@@ -46,28 +47,126 @@ app.post('/addtenant',(req,res)=>{
 })
 
 app.get('/property',(req,res)=>{
-    db.collection('Property').find().toArray((err,result)=>{
-        if (err) console.log('The property API is not working')
-        res.send(result);
+    var query = parseInt(req.query.user_id);
+    // console.log(query);
+    db.collection('Property').find({user_id:query}).toArray((err,result)=>{
+        if (err) throw ('This API is not working')
+        res.send(result)
     })
 })
 
-app.post('/addproperty',(req,res)=>{
-    console.log(req.body)
-    db.collection('Property').insert(req.body,(err,result)=>{
+var storage = multer.diskStorage({
+    destination:function(req,file,cb){
+        cb(null,'uploads')
+    },
+    filename:function(req,filename,cb){
+        cb(null,Date.now()+filename.originalname)
+    }
+})
+var upload = multer({storage:storage})
+
+
+app.post('/addproperty',upload.single('files'),(req,res)=>{
+    var file = req.file;
+    console.log(file)
+    var psotdata = {
+        property_name:req.body.property_name,
+        eastablish_date:req.body.eastablish_date,
+        location:req.body.location,
+        state:req.body.state,
+        country:req.body.country,
+        maintenance:req.body.maintenance,
+        discription:req.body.discription,
+        files:file.filename
+    }
+    db.collection('Property').insert(psotdata,(err,result)=>{
         if(err) throw err;
-        res.send('data inserted succesfully')
+        res.send(result)
     })
 })
 
+// delete perticular id
+app.delete('/delete/id',(req,res) => {
+    var id = parseInt(req.params._id)
+    db.collection('Property').delete({_id:id})
+    .then(res=>{
+        res.status(200).json({
+            message:'property deleted',
+            result:res
+        })
+    })
+      .catch(err=>{
+          res.status(500).json({
+              error:err
+              
+          })
+          
+      })
+})
+
+//update in perticular object
+app.put('/updateproperty',(req,res)=>{
+    var query= parseInt(req.query._id);  
+    // console.log(query); 
+    db.collection('Property').findOneAndUpdate({_id:query},{
+        $set:{
+            property_name:req.body.property_name,
+            eastablish_date:req.body.eastablish_date,
+            location:req.body.location,
+            state:req.body.state,
+            country:req.body.country,
+            maintenance:req.body.maintenance,
+            discription:req.body.discription
+        }
+    },(err,result)=>{
+        if (err) throw err;
+        res.send('data update successfully')
+    })
+
+})
+
+app.get('/property/id',(req,res)=>{
+    // console.log('testing');
+    var query = parseInt(req.query.id);
+    // console.log(query);
+    db.collection('Property').find({id:query}).toArray((err,result)=>{
+        if (err) throw ('This API is not working')
+        res.send(result)
+    })
+})
+
+app.post('/send_mail',(req,res)=>{
+    // console.log(req.body)
+    var transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: 'info.renthunt@gmail.com',
+          pass: 'cuz123##'
+        }
+      });
+      
+      var mailOptions = {
+        from: 'info.renthunt@gmail.com',
+        to: req.body.to,
+        subject:req.body.subject,
+        text: req.body.message
+      };
+      
+      transporter.sendMail(mailOptions, function(error, info){
+        if (error) {
+            res.json({status: false, respMsg: error})
+        } else {
+          console.log('Email sent: ' + info.response);
+        }
+      }
+      
+      );
+})
 
 MongoClient.connect(MongoUrl,(err,client)=>{
     if (err) console.log('Not connecting');
     db=client.db('RentHunt')
 })
-
-
-
 
 app.listen(port,()=>{
     console.log(`localhost:${port}`)
